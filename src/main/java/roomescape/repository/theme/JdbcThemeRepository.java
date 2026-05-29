@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import roomescape.domain.theme.PopularThemeCondition;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeWithCount;
-import roomescape.dto.theme.PopularThemeRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ public class JdbcThemeRepository implements ThemeRepository {
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_DESCRIPTION = "description";
     private static final String COLUMN_IMAGE_URL = "image_url";
+    private static final String COLUMN_COUNT = "count";
 
     private static final String SELECT_ALL_SQL = "SELECT id, name, description, image_url FROM theme";
     private static final String DELETE_SPECIFIC_ID_SQL = "DELETE FROM theme WHERE id = ?";
@@ -52,6 +52,14 @@ public class JdbcThemeRepository implements ThemeRepository {
             rs.getString(COLUMN_NAME),
             rs.getString(COLUMN_DESCRIPTION),
             rs.getString(COLUMN_IMAGE_URL)
+    );
+
+    private static final RowMapper<ThemeWithCount> THEME_WITH_COUNT_MAPPER = (rs, rowNumber) -> new ThemeWithCount(
+            rs.getLong(COLUMN_ID),
+            rs.getString(COLUMN_NAME),
+            rs.getString(COLUMN_DESCRIPTION),
+            rs.getString(COLUMN_IMAGE_URL),
+            rs.getLong(COLUMN_COUNT)
     );
 
     private final JdbcTemplate jdbcTemplate;
@@ -89,7 +97,7 @@ public class JdbcThemeRepository implements ThemeRepository {
 
     @Override
     public List<ThemeWithCount> getPopularTheme(PopularThemeCondition popularThemeCondition) {
-        return jdbcTemplate.query(SELECT_POPULAR_THEMES_BY_DATE_RANGE, (rs, i) -> ThemeWithCount.from(rs),
+        return jdbcTemplate.query(SELECT_POPULAR_THEMES_BY_DATE_RANGE, THEME_WITH_COUNT_MAPPER,
                 popularThemeCondition.startDate(),
                 popularThemeCondition.endDate(),
                 popularThemeCondition.size()
