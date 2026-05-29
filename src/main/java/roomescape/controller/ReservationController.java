@@ -38,7 +38,7 @@ public class ReservationController {
     ) {
         Reservation addedReservation = reservationService.addReservation(addReservationRequest);
 
-        return new ResponseEntity<>(ReservationResponse.from(addedReservation), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.from(addedReservation));
     }
 
     @DeleteMapping("/{id}")

@@ -44,7 +44,7 @@ public class ThemeController {
     public ResponseEntity<ThemeResponse> addTheme(@RequestBody @Valid AddThemeRequest addThemeRequest) {
         Theme addedTheme = themeService.addTheme(addThemeRequest);
 
-        return new ResponseEntity<>(ThemeResponse.from(addedTheme), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ThemeResponse.from(addedTheme));
     }
 
     @DeleteMapping("/{id}")
