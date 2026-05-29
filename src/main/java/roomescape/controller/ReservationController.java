@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.reservation.Reservation;
-import roomescape.dto.reservation.AddReservationRequest;
-import roomescape.dto.reservation.ReservationCondition;
-import roomescape.dto.reservation.ReservationResponse;
-import roomescape.dto.reservation.UpdateReservationRequest;
+import roomescape.dto.reservation.*;
 import roomescape.service.ReservationService;
 
 import java.util.List;
@@ -50,9 +47,9 @@ public class ReservationController {
 
     @GetMapping(params = {"name"})
     public ResponseEntity<List<ReservationResponse>> getReservationsByName(
-            @ModelAttribute @Valid ReservationCondition reservationCondition
+            @ModelAttribute @Valid GetReservationByNameRequest getReservationByNameRequest
     ) {
-        List<Reservation> reservations = reservationService.getAllReservationsByName(reservationCondition);
+        List<Reservation> reservations = reservationService.getAllReservationsByName(getReservationByNameRequest);
         List<ReservationResponse> reservationResponses = reservations.stream()
                 .map(ReservationResponse::from)
                 .toList();
@@ -63,9 +60,9 @@ public class ReservationController {
     @DeleteMapping(value = "/{id}", params = {"name"})
     public ResponseEntity<Void> deleteReservationByName(
             @PathVariable("id") long id,
-            @ModelAttribute @Valid ReservationCondition reservationCondition
+            @ModelAttribute @Valid DeleteReservationRequest deleteReservationRequest
     ) {
-        reservationService.deleteReservationByName(id, reservationCondition.name());
+        reservationService.deleteReservationByName(id, deleteReservationRequest.name());
 
         return ResponseEntity.noContent().build();
     }

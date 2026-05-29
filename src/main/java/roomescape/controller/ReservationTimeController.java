@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.reservationTime.ReservationTime;
-import roomescape.domain.reservationTime.ReservationTimeCondition;
 import roomescape.domain.reservationTime.ReservationTimeWithAvailable;
 import roomescape.dto.reservationTime.AddReservationTimeRequest;
+import roomescape.dto.reservationTime.AvailableReservationTimeRequest;
 import roomescape.dto.reservationTime.AvailableReservationTimeResponse;
 import roomescape.dto.reservationTime.ReservationTimeResponse;
 import roomescape.service.ReservationTimeService;
@@ -51,10 +51,10 @@ public class ReservationTimeController {
 
     @GetMapping(value = "/availability", params = {"date", "themeId"})
     public ResponseEntity<List<AvailableReservationTimeResponse>> getAvailableReservationTimeByDateAndTheme(
-            @ModelAttribute @Valid ReservationTimeCondition reservationTimeCondition
+            @ModelAttribute @Valid AvailableReservationTimeRequest availableReservationTimeRequest
     ) {
         List<ReservationTimeWithAvailable> reservationTimesWithAvailable  = reservationTimeService
-                .getAvailableReservationTimeByDateAndTheme(reservationTimeCondition);
+                .getAvailableReservationTimeByDateAndTheme(availableReservationTimeRequest);
 
         List<AvailableReservationTimeResponse> availableReservationTimeResponses = reservationTimesWithAvailable.stream()
                 .map(AvailableReservationTimeResponse::from)

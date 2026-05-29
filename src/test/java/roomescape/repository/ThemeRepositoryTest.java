@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import roomescape.domain.theme.PopularThemeCondition;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeWithCount;
-import roomescape.dto.theme.PopularConditionRequest;
+import roomescape.dto.theme.PopularThemeRequest;
 import roomescape.repository.theme.JdbcThemeRepository;
 import roomescape.repository.theme.ThemeRepository;
 
@@ -103,7 +103,7 @@ public class ThemeRepositoryTest extends BaseRepositoryTest {
         jdbcTemplate.update("INSERT INTO reservation (name, date, time_id, theme_id, created_at) VALUES (?, ?, ?, ?, ?)", "reservation5", "2026-04-04", 1, 3, "2026-04-04");
         jdbcTemplate.update("INSERT INTO reservation (name, date, time_id, theme_id, created_at) VALUES (?, ?, ?, ?, ?)", "reservation6", "2026-05-05", 1, 2, "2026-05-05");
 
-        List<ThemeWithCount> popularThemes = themeRepository.getPopularTheme(new PopularConditionRequest(startDate, endDate, size));
+        List<ThemeWithCount> popularThemes = themeRepository.getPopularTheme(new PopularThemeCondition(startDate, endDate, size));
         assertAll(
                 () -> assertThat(popularThemes.size()).isEqualTo(2),
                 () -> assertThat(popularThemes.getFirst().id()).isEqualTo(2),

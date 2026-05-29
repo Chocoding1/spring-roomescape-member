@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeWithCount;
 import roomescape.dto.theme.AddThemeRequest;
-import roomescape.dto.theme.PopularConditionRequest;
+import roomescape.dto.theme.PopularThemeRequest;
 import roomescape.exception.exception.DataReferencedException;
 import roomescape.exception.exception.DuplicatedResourceException;
 import roomescape.exception.exception.NotFoundResourceException;
@@ -62,7 +62,7 @@ public class ThemeService {
         }
     }
 
-    public List<ThemeWithCount> getPopularTheme(PopularConditionRequest popularConditionRequest) {
-        return themeRepository.getPopularTheme(popularConditionRequest);
+    public List<ThemeWithCount> getPopularTheme(PopularThemeRequest popularThemeRequest) {
+        return themeRepository.getPopularTheme(popularThemeRequest.toPopularThemeCondition());
     }
 }

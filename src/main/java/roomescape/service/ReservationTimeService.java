@@ -7,6 +7,7 @@ import roomescape.domain.reservationTime.ReservationTime;
 import roomescape.domain.reservationTime.ReservationTimeCondition;
 import roomescape.domain.reservationTime.ReservationTimeWithAvailable;
 import roomescape.dto.reservationTime.AddReservationTimeRequest;
+import roomescape.dto.reservationTime.AvailableReservationTimeRequest;
 import roomescape.exception.exception.DataReferencedException;
 import roomescape.exception.exception.DuplicatedResourceException;
 import roomescape.repository.reservation.ReservationRepository;
@@ -56,8 +57,10 @@ public class ReservationTimeService {
     }
 
     public List<ReservationTimeWithAvailable> getAvailableReservationTimeByDateAndTheme(
-            ReservationTimeCondition reservationTimeCondition
+            AvailableReservationTimeRequest availableReservationTimeRequest
     ) {
-        return reservationTimeRepository.getAvailableReservationTimeByDateAndTheme(reservationTimeCondition);
+        return reservationTimeRepository.getAvailableReservationTimeByDateAndTheme(
+                availableReservationTimeRequest.toReservationTimeCondition()
+        );
     }
 }

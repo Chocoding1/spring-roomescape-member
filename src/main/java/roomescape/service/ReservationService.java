@@ -10,7 +10,7 @@ import roomescape.domain.reservation.Reservation;
 import roomescape.domain.reservationTime.ReservationTime;
 import roomescape.domain.theme.Theme;
 import roomescape.dto.reservation.AddReservationRequest;
-import roomescape.dto.reservation.ReservationCondition;
+import roomescape.dto.reservation.GetReservationByNameRequest;
 import roomescape.dto.reservation.UpdateReservationRequest;
 import roomescape.exception.dto.ErrorCode;
 import roomescape.exception.exception.DuplicatedResourceException;
@@ -38,8 +38,8 @@ public class ReservationService {
         return reservationRepository.getAllReservation();
     }
 
-    public List<Reservation> getAllReservationsByName(ReservationCondition reservationCondition) {
-        return reservationRepository.getAllReservationByName(reservationCondition.name());
+    public List<Reservation> getAllReservationsByName(GetReservationByNameRequest getReservationByNameRequest) {
+        return reservationRepository.getAllReservationByName(getReservationByNameRequest.name());
     }
 
     @Transactional

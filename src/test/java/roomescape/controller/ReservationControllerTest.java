@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.reservationTime.ReservationTime;
-import roomescape.dto.reservation.ReservationCondition;
+import roomescape.dto.reservation.GetReservationByNameRequest;
 import roomescape.service.ReservationService;
 
 import java.time.LocalDate;
@@ -103,8 +103,8 @@ class ReservationControllerTest {
     @Test
     @DisplayName("이름으로 예약 조회 시 200과 바디를 반환한다")
     void getReservationByName() throws Exception {
-        ReservationCondition reservationCondition = new ReservationCondition("홍길동");
-        given(reservationService.getAllReservationsByName(reservationCondition))
+        GetReservationByNameRequest getReservationByNameRequest = new GetReservationByNameRequest("홍길동");
+        given(reservationService.getAllReservationsByName(getReservationByNameRequest))
                 .willReturn(List.of(reservation));
 
         mockMvc.perform(get("/reservations")

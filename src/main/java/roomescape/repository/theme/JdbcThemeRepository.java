@@ -4,9 +4,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import roomescape.domain.theme.PopularThemeCondition;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeWithCount;
-import roomescape.dto.theme.PopularConditionRequest;
+import roomescape.dto.theme.PopularThemeRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -87,11 +88,11 @@ public class JdbcThemeRepository implements ThemeRepository {
     }
 
     @Override
-    public List<ThemeWithCount> getPopularTheme(PopularConditionRequest popularConditionRequest) {
+    public List<ThemeWithCount> getPopularTheme(PopularThemeCondition popularThemeCondition) {
         return jdbcTemplate.query(SELECT_POPULAR_THEMES_BY_DATE_RANGE, (rs, i) -> ThemeWithCount.from(rs),
-                popularConditionRequest.startDate(),
-                popularConditionRequest.endDate(),
-                popularConditionRequest.size()
+                popularThemeCondition.startDate(),
+                popularThemeCondition.endDate(),
+                popularThemeCondition.size()
         );
     }
 

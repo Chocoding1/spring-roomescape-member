@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeWithCount;
 import roomescape.dto.theme.AddThemeRequest;
-import roomescape.dto.theme.PopularConditionRequest;
+import roomescape.dto.theme.PopularThemeRequest;
 import roomescape.dto.theme.PopularThemeResponse;
 import roomescape.dto.theme.ThemeResponse;
 import roomescape.service.ThemeService;
@@ -56,9 +56,9 @@ public class ThemeController {
 
     @GetMapping(value = "/popular", params = {"startDate", "endDate", "size"})
     public ResponseEntity<List<PopularThemeResponse>> getPopularTheme(
-            @ModelAttribute @Valid PopularConditionRequest popularConditionRequest
+            @ModelAttribute @Valid PopularThemeRequest popularThemeRequest
     ) {
-        List<ThemeWithCount> themeWithCounts = themeService.getPopularTheme(popularConditionRequest);
+        List<ThemeWithCount> themeWithCounts = themeService.getPopularTheme(popularThemeRequest);
         List<PopularThemeResponse> popularThemeResponses = themeWithCounts.stream()
                 .map(PopularThemeResponse::from)
                 .toList();
