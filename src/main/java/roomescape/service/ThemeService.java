@@ -35,7 +35,7 @@ public class ThemeService {
             throw new DuplicatedResourceException(DUPLICATED_THEME);
         }
 
-        return themeRepository.addTheme(addThemeRequest.toEntity());
+        return themeRepository.addTheme(addThemeRequest.toTheme());
     }
 
     public List<Theme> getAllTheme() {

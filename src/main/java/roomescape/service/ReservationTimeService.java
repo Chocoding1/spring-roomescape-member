@@ -37,7 +37,7 @@ public class ReservationTimeService {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION_TIME);
         }
 
-        return reservationTimeRepository.addReservationTime(addReservationTimeRequest.toEntity());
+        return reservationTimeRepository.addReservationTime(addReservationTimeRequest.toReservationTime());
     }
 
     @Transactional

@@ -15,7 +15,7 @@ public record AddThemeRequest(
         String imageUrl
 ) {
 
-    public Theme toEntity() {
+    public Theme toTheme() {
         return new Theme(name, description, imageUrl);
     }
 }

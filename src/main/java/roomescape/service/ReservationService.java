@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.reservation.Reservation;
@@ -61,7 +60,7 @@ public class ReservationService {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
         }
 
-        return reservationRepository.addReservation(addReservationRequest.toEntity(reservationTime, theme));
+        return reservationRepository.addReservation(addReservationRequest.toReservation(reservationTime, theme));
     }
 
     @Transactional
