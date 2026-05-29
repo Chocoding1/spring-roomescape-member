@@ -55,7 +55,9 @@ public class ReservationTimeService {
         }
     }
 
-    public List<ReservationTimeWithAvailable> getAvailableReservationTimeByDateAndTheme(ReservationTimeCondition reservationTimeCondition) {
+    public List<ReservationTimeWithAvailable> getAvailableReservationTimeByDateAndTheme(
+            ReservationTimeCondition reservationTimeCondition
+    ) {
         return reservationTimeRepository.getAvailableReservationTimeByDateAndTheme(reservationTimeCondition);
     }
 }

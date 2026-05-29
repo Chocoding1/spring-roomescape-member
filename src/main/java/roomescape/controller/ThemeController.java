@@ -55,7 +55,9 @@ public class ThemeController {
     }
 
     @GetMapping(value = "/popular", params = {"startDate", "endDate", "size"})
-    public ResponseEntity<List<PopularThemeResponse>> getPopularTheme(@ModelAttribute @Valid PopularConditionRequest popularConditionRequest) {
+    public ResponseEntity<List<PopularThemeResponse>> getPopularTheme(
+            @ModelAttribute @Valid PopularConditionRequest popularConditionRequest
+    ) {
         List<ThemeWithCount> themeWithCounts = themeService.getPopularTheme(popularConditionRequest);
         List<PopularThemeResponse> popularThemeResponses = themeWithCounts.stream()
                 .map(PopularThemeResponse::from)

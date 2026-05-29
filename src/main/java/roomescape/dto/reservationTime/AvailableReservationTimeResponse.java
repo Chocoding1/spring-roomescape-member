@@ -16,6 +16,10 @@ public record AvailableReservationTimeResponse(
 ) {
 
     public static AvailableReservationTimeResponse from(ReservationTimeWithAvailable reservationTimeWithAvailable) {
-        return new AvailableReservationTimeResponse(reservationTimeWithAvailable.id(), reservationTimeWithAvailable.startAt(), reservationTimeWithAvailable.isAvailable());
+        return new AvailableReservationTimeResponse(
+                reservationTimeWithAvailable.id(),
+                reservationTimeWithAvailable.startAt(),
+                reservationTimeWithAvailable.isAvailable()
+        );
     }
 }

@@ -34,7 +34,9 @@ public class ReservationTimeController {
     }
 
     @PostMapping()
-    public ResponseEntity<ReservationTimeResponse> addReservationTime(@RequestBody @Valid AddReservationTimeRequest addReservationTimeRequest) {
+    public ResponseEntity<ReservationTimeResponse> addReservationTime(
+            @RequestBody @Valid AddReservationTimeRequest addReservationTimeRequest
+    ) {
         ReservationTime reservationTime = reservationTimeService.addReservationTime(addReservationTimeRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ReservationTimeResponse.from(reservationTime));
@@ -48,8 +50,12 @@ public class ReservationTimeController {
     }
 
     @GetMapping(value = "/availability", params = {"date", "themeId"})
-    public ResponseEntity<List<AvailableReservationTimeResponse>> getAvailableReservationTimeByDateAndTheme(@ModelAttribute @Valid ReservationTimeCondition reservationTimeCondition) {
-        List<ReservationTimeWithAvailable> reservationTimesWithAvailable  = reservationTimeService.getAvailableReservationTimeByDateAndTheme(reservationTimeCondition);
+    public ResponseEntity<List<AvailableReservationTimeResponse>> getAvailableReservationTimeByDateAndTheme(
+            @ModelAttribute @Valid ReservationTimeCondition reservationTimeCondition
+    ) {
+        List<ReservationTimeWithAvailable> reservationTimesWithAvailable  = reservationTimeService
+                .getAvailableReservationTimeByDateAndTheme(reservationTimeCondition);
+
         List<AvailableReservationTimeResponse> availableReservationTimeResponses = reservationTimesWithAvailable.stream()
                 .map(AvailableReservationTimeResponse::from)
                 .toList();

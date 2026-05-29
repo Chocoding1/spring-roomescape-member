@@ -52,7 +52,8 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
             rs.getObject(COLUMN_START_AT, LocalTime.class)
     );
 
-    private static final RowMapper<ReservationTimeWithAvailable> CONDITION_MAPPER = (rs, rowNumber) -> new ReservationTimeWithAvailable(
+    private static final RowMapper<ReservationTimeWithAvailable> CONDITION_MAPPER = (rs, rowNumber) ->
+            new ReservationTimeWithAvailable(
             rs.getLong(COLUMN_ID),
             rs.getObject(COLUMN_START_AT, LocalTime.class),
             rs.getBoolean(COLUMN_AVAILABLE)
@@ -95,7 +96,9 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
     }
 
     @Override
-    public List<ReservationTimeWithAvailable> getAvailableReservationTimeByDateAndTheme(ReservationTimeCondition reservationTimeCondition) {
+    public List<ReservationTimeWithAvailable> getAvailableReservationTimeByDateAndTheme(
+            ReservationTimeCondition reservationTimeCondition
+    ) {
         return jdbcTemplate.query(
                 SELECT_AVAILABLE_SQL,
                 CONDITION_MAPPER,
