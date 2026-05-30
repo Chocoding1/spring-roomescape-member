@@ -22,31 +22,6 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
     private static final String COLUMN_START_AT = "start_at";
     private static final String COLUMN_AVAILABLE = "available";
 
-    private static final String SELECT_SPECIFIC_ID_SQL = "SELECT id, start_at FROM reservation_time WHERE id = ?";
-    private static final String SELECT_ALL_SQL = "SELECT id, start_at FROM reservation_time";
-    private static final String DELETE_SPECIFIC_ID_SQL = "DELETE FROM reservation_time WHERE id = ?";
-    private static final String SELECT_AVAILABLE_SQL = """
-            SELECT t.id AS id, t.start_at AS start_at,
-            CASE
-            WHEN r.time_id IS NULL THEN true
-            ELSE false
-            END AS available
-            FROM reservation_time t
-            LEFT JOIN (
-            SELECT r.time_id
-            FROM reservation r
-            WHERE r.date = ? AND r.theme_id = ?
-            ) AS r ON r.time_id = t.id
-            """;
-
-    private static final String EXIST_BY_START_AT_SQL = """
-        SELECT EXISTS (
-            SELECT 1
-            FROM reservation_time
-            WHERE start_at = ?
-        )
-        """;
-
     private static final RowMapper<ReservationTime> MAPPER = (rs, rowNumber) -> new ReservationTime(
             rs.getLong(COLUMN_ID),
             rs.getObject(COLUMN_START_AT, LocalTime.class)
@@ -80,27 +55,47 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
 
     @Override
     public Optional<ReservationTime> getReservationTime(long id) {
-        return jdbcTemplate.query(SELECT_SPECIFIC_ID_SQL, MAPPER, id)
+        String sql = "SELECT id, start_at FROM reservation_time WHERE id = ?";
+
+        return jdbcTemplate.query(sql, MAPPER, id)
                 .stream()
                 .findFirst();
     }
 
     @Override
     public List<ReservationTime> getAllReservationTime() {
-        return Collections.unmodifiableList(jdbcTemplate.query(SELECT_ALL_SQL, MAPPER));
+        String sql = "SELECT id, start_at FROM reservation_time";
+
+        return Collections.unmodifiableList(jdbcTemplate.query(sql, MAPPER));
     }
 
     @Override
     public void deleteReservationTime(long id) {
-        jdbcTemplate.update(DELETE_SPECIFIC_ID_SQL, id);
+        String sql = "DELETE FROM reservation_time WHERE id = ?";
+
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public List<ReservationTimeWithAvailable> getAvailableReservationTimeByDateAndTheme(
             ReservationTimeCondition reservationTimeCondition
     ) {
+        String sql = """
+                SELECT t.id AS id, t.start_at AS start_at,
+                CASE
+                WHEN r.time_id IS NULL THEN true
+                ELSE false
+                END AS available
+                FROM reservation_time t
+                LEFT JOIN (
+                SELECT r.time_id
+                FROM reservation r
+                WHERE r.date = ? AND r.theme_id = ?
+                ) AS r ON r.time_id = t.id
+                """;
+
         return jdbcTemplate.query(
-                SELECT_AVAILABLE_SQL,
+                sql,
                 CONDITION_MAPPER,
                 reservationTimeCondition.date(),
                 reservationTimeCondition.themeId()
@@ -109,10 +104,14 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
 
     @Override
     public boolean existsByStartAt(LocalTime startAt) {
-        return jdbcTemplate.queryForObject(
-                EXIST_BY_START_AT_SQL,
-                Boolean.class,
-                startAt
-        ) == Boolean.TRUE;
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM reservation_time
+                    WHERE start_at = ?
+                )
+                """;
+
+        return jdbcTemplate.queryForObject(sql, Boolean.class, startAt) == Boolean.TRUE;
     }
 }

@@ -49,40 +49,6 @@ public class JdbcReservationRepository implements ReservationRepository {
         JOIN theme AS t ON r.theme_id = t.id
     """;
 
-    private static final String DELETE_SPECIFIC_ID_SQL = "DELETE FROM reservation WHERE id = ?";
-    private static final String EXIST_BY_TIME_ID_SQL = """
-            SELECT EXISTS (
-                SELECT 1
-                    FROM reservation
-                    WHERE time_id = ?
-            )
-    """;
-    private static final String EXIST_BY_THEME_ID_SQL = """
-            SELECT EXISTS (
-                SELECT 1
-                    FROM reservation
-                    WHERE theme_id = ?
-            )
-    """;
-
-    private static final String EXIST_BY_TIME_ID_AND_THEME_ID_AND_DATE_SQL = """
-            SELECT EXISTS (
-                SELECT 1
-                    FROM reservation
-                    WHERE time_id = ?
-                    AND theme_id = ?
-                    AND date = ?
-            )
-            """;
-
-    private static final String UPDATE_RESERVATION_SQL = """
-        UPDATE reservation
-        SET date = ?, time_id = ?
-        WHERE id = ?
-        """;
-
-    private static final String SELECT_BY_ID_SQL = SELECT_ALL_SQL + "WHERE r.id = ?";
-
     private static final RowMapper<Reservation> MAPPER = (rs, rowNumber) -> new Reservation(
             rs.getLong(COLUMN_ID),
             rs.getString(COLUMN_NAME),
@@ -135,37 +101,66 @@ public class JdbcReservationRepository implements ReservationRepository {
 
     @Override
     public void deleteReservation(long id) {
-        jdbcTemplate.update(DELETE_SPECIFIC_ID_SQL, id);
+        String sql = "DELETE FROM reservation WHERE id = ?";
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public boolean existsByTimeId(long timeId) {
-        return jdbcTemplate.queryForObject(EXIST_BY_TIME_ID_SQL, Boolean.class, timeId) == Boolean.TRUE;
+        String sql = """
+            SELECT EXISTS (
+                SELECT 1
+                    FROM reservation
+                    WHERE time_id = ?
+            )
+    """;
+        return jdbcTemplate.queryForObject(sql, Boolean.class, timeId) == Boolean.TRUE;
     }
 
     @Override
     public boolean existsByThemeId(long themeId) {
-        return jdbcTemplate.queryForObject(EXIST_BY_THEME_ID_SQL, Boolean.class, themeId) == Boolean.TRUE;
+        String sql = """
+            SELECT EXISTS (
+                SELECT 1
+                    FROM reservation
+                    WHERE theme_id = ?
+            )
+    """;
+        return jdbcTemplate.queryForObject(sql, Boolean.class, themeId) == Boolean.TRUE;
     }
 
     @Override
     public boolean existsByTimeIdAndThemeIdAndDate(long timeId, long themeId, LocalDate date) {
-        return jdbcTemplate.queryForObject(
-                EXIST_BY_TIME_ID_AND_THEME_ID_AND_DATE_SQL,
-                Boolean.class,
-                timeId, themeId, date
-        ) == Boolean.TRUE;
+        String sql = """
+            SELECT EXISTS (
+                SELECT 1
+                    FROM reservation
+                    WHERE time_id = ?
+                    AND theme_id = ?
+                    AND date = ?
+            )
+            """;
+
+        return jdbcTemplate.queryForObject(sql, Boolean.class, timeId, themeId, date) == Boolean.TRUE;
     }
 
     @Override
     public Optional<Reservation> getReservationById(long id) {
-        List<Reservation> results = jdbcTemplate.query(SELECT_BY_ID_SQL, MAPPER, id);
+        String sql = SELECT_ALL_SQL + "WHERE r.id = ?";
+
+        List<Reservation> results = jdbcTemplate.query(sql, MAPPER, id);
         return results.stream().findFirst();
     }
 
     @Override
     public Reservation updateReservation(long id, LocalDate date, long reservationTimeId) {
-        jdbcTemplate.update(UPDATE_RESERVATION_SQL, date, reservationTimeId, id);
+        String sql = """
+        UPDATE reservation
+        SET date = ?, time_id = ?
+        WHERE id = ?
+        """;
+
+        jdbcTemplate.update(sql, date, reservationTimeId, id);
         return getReservationById(id).get();
     }
 }

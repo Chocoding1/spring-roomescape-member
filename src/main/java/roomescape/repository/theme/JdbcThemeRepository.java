@@ -22,31 +22,6 @@ public class JdbcThemeRepository implements ThemeRepository {
     private static final String COLUMN_IMAGE_URL = "image_url";
     private static final String COLUMN_COUNT = "count";
 
-    private static final String SELECT_ALL_SQL = "SELECT id, name, description, image_url FROM theme";
-    private static final String DELETE_SPECIFIC_ID_SQL = "DELETE FROM theme WHERE id = ?";
-    private static final String SELECT_SPECIFIC_ID_SQL = "SELECT id, name, description, image_url FROM theme WHERE id = ?";
-
-    private static final String SELECT_POPULAR_THEMES_BY_DATE_RANGE = """
-        SELECT t.id AS id, t.name AS name, t.description AS description, t.image_url AS image_url, reservation_count AS count
-        FROM theme t
-        JOIN (
-            SELECT theme_id, COUNT(id) AS reservation_count
-            FROM reservation
-            WHERE created_at BETWEEN ? AND ?
-            GROUP BY theme_id
-        ) AS r ON r.theme_id = t.id
-        ORDER BY r.reservation_count DESC
-        LIMIT ?
-    """;
-
-    private static final String EXIST_BY_NAME_SQL = """
-        SELECT EXISTS (
-            SELECT 1
-            FROM theme
-            WHERE name = ?
-        )
-        """;
-
     private static final RowMapper<Theme> MAPPER = (rs, rowNumber) -> new Theme(
             rs.getLong(COLUMN_ID),
             rs.getString(COLUMN_NAME),
@@ -82,22 +57,41 @@ public class JdbcThemeRepository implements ThemeRepository {
     }
 
     public List<Theme> getAllTheme() {
-        return jdbcTemplate.query(SELECT_ALL_SQL, MAPPER);
+        String sql = "SELECT id, name, description, image_url FROM theme";
+
+        return jdbcTemplate.query(sql, MAPPER);
     }
 
     public Optional<Theme> getTheme(long id) {
-        return jdbcTemplate.query(SELECT_SPECIFIC_ID_SQL, MAPPER, id)
+        String sql = "SELECT id, name, description, image_url FROM theme WHERE id = ?";
+
+        return jdbcTemplate.query(sql, MAPPER, id)
                 .stream()
                 .findFirst();
     }
 
     public void deleteTheme(long id) {
-        jdbcTemplate.update(DELETE_SPECIFIC_ID_SQL, id);
+        String sql = "DELETE FROM theme WHERE id = ?";
+
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public List<ThemeWithCount> getPopularTheme(PopularThemeCondition popularThemeCondition) {
-        return jdbcTemplate.query(SELECT_POPULAR_THEMES_BY_DATE_RANGE, THEME_WITH_COUNT_MAPPER,
+        String sql = """
+                    SELECT t.id AS id, t.name AS name, t.description AS description, t.image_url AS image_url, reservation_count AS count
+                    FROM theme t
+                    JOIN (
+                        SELECT theme_id, COUNT(id) AS reservation_count
+                        FROM reservation
+                        WHERE created_at BETWEEN ? AND ?
+                        GROUP BY theme_id
+                    ) AS r ON r.theme_id = t.id
+                    ORDER BY r.reservation_count DESC
+                    LIMIT ?
+                """;
+
+        return jdbcTemplate.query(sql, THEME_WITH_COUNT_MAPPER,
                 popularThemeCondition.startDate(),
                 popularThemeCondition.endDate(),
                 popularThemeCondition.size()
@@ -106,10 +100,14 @@ public class JdbcThemeRepository implements ThemeRepository {
 
     @Override
     public boolean existsByName(String name) {
-        return jdbcTemplate.queryForObject(
-                EXIST_BY_NAME_SQL,
-                Boolean.class,
-                name
-        ) == Boolean.TRUE;
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM theme
+                    WHERE name = ?
+                )
+                """;
+
+        return jdbcTemplate.queryForObject(sql, Boolean.class, name) == Boolean.TRUE;
     }
 }
