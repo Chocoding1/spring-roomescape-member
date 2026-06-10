@@ -49,7 +49,7 @@ public class ReservationController {
     public ResponseEntity<List<ReservationResponse>> getReservationsByName(
             @ModelAttribute @Valid GetReservationByNameRequest getReservationByNameRequest
     ) {
-        List<Reservation> reservations = reservationService.getAllReservationsByName(getReservationByNameRequest);
+        List<Reservation> reservations = reservationService.getAllReservationsByName(getReservationByNameRequest.name());
         List<ReservationResponse> reservationResponses = reservations.stream()
                 .map(ReservationResponse::from)
                 .toList();

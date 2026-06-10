@@ -103,8 +103,8 @@ class ReservationControllerTest {
     @Test
     @DisplayName("이름으로 예약 조회 시 200과 바디를 반환한다")
     void getReservationByName() throws Exception {
-        GetReservationByNameRequest getReservationByNameRequest = new GetReservationByNameRequest("홍길동");
-        given(reservationService.getAllReservationsByName(getReservationByNameRequest))
+        String name = "홍길동";
+        given(reservationService.getAllReservationsByName(name))
                 .willReturn(List.of(reservation));
 
         mockMvc.perform(get("/reservations")

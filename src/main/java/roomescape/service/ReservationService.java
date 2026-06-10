@@ -38,8 +38,8 @@ public class ReservationService {
         return reservationRepository.getAllReservation();
     }
 
-    public List<Reservation> getAllReservationsByName(GetReservationByNameRequest getReservationByNameRequest) {
-        return reservationRepository.getAllReservationByName(getReservationByNameRequest.name());
+    public List<Reservation> getAllReservationsByName(String name) {
+        return reservationRepository.getAllReservationByName(name);
     }
 
     @Transactional
