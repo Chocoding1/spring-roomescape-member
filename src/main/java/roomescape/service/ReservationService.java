@@ -1,24 +1,22 @@
 package roomescape.service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.reservationTime.ReservationTime;
 import roomescape.domain.theme.Theme;
 import roomescape.dto.reservation.AddReservationRequest;
-import roomescape.dto.reservation.GetReservationByNameRequest;
 import roomescape.dto.reservation.UpdateReservationRequest;
 import roomescape.exception.dto.ErrorCode;
 import roomescape.exception.exception.DuplicatedResourceException;
 import roomescape.exception.exception.InvalidRequestException;
 import roomescape.exception.exception.NotFoundResourceException;
-import roomescape.repository.theme.ThemeRepository;
 import roomescape.repository.reservation.ReservationRepository;
 import roomescape.repository.reservationTime.ReservationTimeRepository;
+import roomescape.repository.theme.ThemeRepository;
+
+import java.time.LocalDate;
+import java.util.List;
 
 import static roomescape.exception.dto.ErrorCode.*;
 
@@ -44,10 +42,15 @@ public class ReservationService {
 
     @Transactional
     public Reservation addReservation(AddReservationRequest addReservationRequest) {
-        ReservationTime reservationTime = validateDateTimeAndGetReservationTime(
-                addReservationRequest.date(),
-                addReservationRequest.timeId()
-        );
+        LocalDate reservationDate = addReservationRequest.date();
+        validateDate(reservationDate);
+
+        ReservationTime reservationTime = reservationTimeRepository.getReservationTime(addReservationRequest.timeId())
+                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
+
+        if (reservationDate.isEqual(LocalDate.now())) {
+            reservationTime.validateTime();
+        }
 
         Theme theme = themeRepository.getTheme(addReservationRequest.themeId())
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_THEME));
@@ -89,10 +92,15 @@ public class ReservationService {
             throw new InvalidRequestException(UNAUTHORIZED_RESERVATION_ACCESS);
         }
 
-        ReservationTime reservationTime = validateDateTimeAndGetReservationTime(
-                updateReservationRequest.date(),
-                updateReservationRequest.timeId()
-        );
+        LocalDate reservationDate = updateReservationRequest.date();
+        validateDate(reservationDate);
+
+        ReservationTime reservationTime = reservationTimeRepository.getReservationTime(updateReservationRequest.timeId())
+                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
+
+        if (reservationDate.isEqual(LocalDate.now())) {
+            reservationTime.validateTime();
+        }
 
         if (reservationRepository.existsByTimeIdAndThemeIdAndDate(
                 updateReservationRequest.timeId(),
@@ -105,31 +113,11 @@ public class ReservationService {
         return reservationRepository.updateReservation(id, updateReservationRequest.date(), reservationTime.id());
     }
 
-    private ReservationTime validateDateTimeAndGetReservationTime(LocalDate reservationDate, long reservationTimeId) {
-        validateDate(reservationDate);
-
-        ReservationTime reservationTime = reservationTimeRepository.getReservationTime(reservationTimeId)
-                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
-
-        if (reservationDate.isEqual(LocalDate.now())) {
-            validateTime(reservationTime.startAt());
-        }
-        return reservationTime;
-    }
-
     private void validateDate(LocalDate reservationDate) {
         LocalDate today = LocalDate.now();
 
         if (reservationDate.isBefore(today)) {
             throw new InvalidRequestException(INVALID_RESERVATION_DATE);
-        }
-    }
-
-    private void validateTime(LocalTime startAt) {
-        LocalTime now = LocalTime.now();
-
-        if (startAt.isBefore(now)) {
-            throw new InvalidRequestException(INVALID_RESERVATION_TIME);
         }
     }
 }
