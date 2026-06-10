@@ -74,9 +74,7 @@ public class ReservationService {
         Reservation reservation = reservationRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
 
-        if (!reservation.name().equals(name)) {
-            throw new InvalidRequestException(ErrorCode.UNAUTHORIZED_RESERVATION_ACCESS);
-        }
+        reservation.validateOwner(name);
 
         reservationRepository.deleteById(id);
     }
