@@ -72,7 +72,7 @@ public class ReservationTimeServiceTest {
     void deleteFailedByIntegrityTest() {
         when(reservationRepository.existsByTimeId(anyLong())).thenReturn(false);
         doThrow(new DataIntegrityViolationException("정합성 오류"))
-                .when(reservationTimeRepository).deleteReservationTime(anyLong());
+                .when(reservationTimeRepository).deleteById(anyLong());
 
         assertThatThrownBy(() -> reservationTimeService.deleteReservationTime(1))
                 .isExactlyInstanceOf(DataReferencedException.class)

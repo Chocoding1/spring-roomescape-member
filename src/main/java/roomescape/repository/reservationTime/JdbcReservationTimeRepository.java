@@ -45,7 +45,7 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
     }
 
     @Override
-    public ReservationTime addReservationTime(ReservationTime reservationTime) {
+    public ReservationTime save(ReservationTime reservationTime) {
         long id = simpleJdbcInsert.executeAndReturnKey(Map.of(
                 COLUMN_START_AT, reservationTime.startAt()
         )).longValue();
@@ -54,7 +54,7 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
     }
 
     @Override
-    public Optional<ReservationTime> getReservationTime(long id) {
+    public Optional<ReservationTime> getById(long id) {
         String sql = "SELECT id, start_at FROM reservation_time WHERE id = ?";
 
         return jdbcTemplate.query(sql, MAPPER, id)
@@ -63,14 +63,14 @@ public class JdbcReservationTimeRepository implements ReservationTimeRepository 
     }
 
     @Override
-    public List<ReservationTime> getAllReservationTime() {
+    public List<ReservationTime> getAll() {
         String sql = "SELECT id, start_at FROM reservation_time";
 
         return Collections.unmodifiableList(jdbcTemplate.query(sql, MAPPER));
     }
 
     @Override
-    public void deleteReservationTime(long id) {
+    public void deleteById(long id) {
         String sql = "DELETE FROM reservation_time WHERE id = ?";
 
         jdbcTemplate.update(sql, id);

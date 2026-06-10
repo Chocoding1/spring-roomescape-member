@@ -46,7 +46,7 @@ public class JdbcThemeRepository implements ThemeRepository {
                 .withTableName(TABLE_NAME)
                 .usingGeneratedKeyColumns(COLUMN_ID);    }
 
-    public Theme addTheme(Theme theme) {
+    public Theme save(Theme theme) {
         long id = simpleJdbcInsert.executeAndReturnKey(Map.of(
                 COLUMN_NAME, theme.name(),
                 COLUMN_DESCRIPTION, theme.description(),
@@ -56,13 +56,13 @@ public class JdbcThemeRepository implements ThemeRepository {
         return new Theme(id, theme.name(), theme.description(), theme.imageUrl());
     }
 
-    public List<Theme> getAllTheme() {
+    public List<Theme> getAll() {
         String sql = "SELECT id, name, description, image_url FROM theme";
 
         return jdbcTemplate.query(sql, MAPPER);
     }
 
-    public Optional<Theme> getTheme(long id) {
+    public Optional<Theme> getById(long id) {
         String sql = "SELECT id, name, description, image_url FROM theme WHERE id = ?";
 
         return jdbcTemplate.query(sql, MAPPER, id)
@@ -70,7 +70,7 @@ public class JdbcThemeRepository implements ThemeRepository {
                 .findFirst();
     }
 
-    public void deleteTheme(long id) {
+    public void deleteById(long id) {
         String sql = "DELETE FROM theme WHERE id = ?";
 
         jdbcTemplate.update(sql, id);

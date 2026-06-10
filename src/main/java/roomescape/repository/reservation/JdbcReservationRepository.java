@@ -77,17 +77,17 @@ public class JdbcReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public List<Reservation> getAllReservation() {
+    public List<Reservation> getAll() {
         return Collections.unmodifiableList(jdbcTemplate.query(SELECT_ALL_SQL, MAPPER));
     }
 
     @Override
-    public List<Reservation> getAllReservationByName(String name) {
+    public List<Reservation> getAllByName(String name) {
         return Collections.unmodifiableList(jdbcTemplate.query(SELECT_ALL_SQL + "WHERE r.name = ?", MAPPER, name));
     }
 
     @Override
-    public Reservation addReservation(Reservation reservation) {
+    public Reservation save(Reservation reservation) {
         long id = simpleJdbcInsert.executeAndReturnKey(Map.of(
                 COLUMN_NAME, reservation.name(),
                 COLUMN_DATE, reservation.date(),
@@ -100,7 +100,7 @@ public class JdbcReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public void deleteReservation(long id) {
+    public void deleteById(long id) {
         String sql = "DELETE FROM reservation WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
@@ -145,7 +145,7 @@ public class JdbcReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public Optional<Reservation> getReservationById(long id) {
+    public Optional<Reservation> getById(long id) {
         String sql = SELECT_ALL_SQL + "WHERE r.id = ?";
 
         List<Reservation> results = jdbcTemplate.query(sql, MAPPER, id);
@@ -153,7 +153,7 @@ public class JdbcReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public Reservation updateReservation(long id, LocalDate date, long reservationTimeId) {
+    public Reservation updateDateAndTime(long id, LocalDate date, long reservationTimeId) {
         String sql = """
         UPDATE reservation
         SET date = ?, time_id = ?
@@ -161,6 +161,6 @@ public class JdbcReservationRepository implements ReservationRepository {
         """;
 
         jdbcTemplate.update(sql, date, reservationTimeId, id);
-        return getReservationById(id).get();
+        return getById(id).get();
     }
 }

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import roomescape.domain.theme.PopularThemeCondition;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeWithCount;
-import roomescape.dto.theme.PopularThemeRequest;
 import roomescape.repository.theme.JdbcThemeRepository;
 import roomescape.repository.theme.ThemeRepository;
 
@@ -35,8 +34,8 @@ public class ThemeRepositoryTest extends BaseRepositoryTest {
 
     @Test
     @DisplayName("특정 예약 테마 정상적으로 가져오는 지 테스트")
-    void getThemeTest() {
-        Optional<Theme> theme = themeRepository.getTheme(1L);
+    void getByIdTest() {
+        Optional<Theme> theme = themeRepository.getById(1L);
 
         assertThat(theme.isPresent()).isTrue();
         assertThat(theme.get()).isEqualTo(new Theme(1L, "테마1", "테마 설명", "image url"));
@@ -45,7 +44,7 @@ public class ThemeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("존재하지 않는 특정 예약 테마 빈 값으로 가져오는 지 테스트")
     void getInvalidThemeTest() {
-        Optional<Theme> theme = themeRepository.getTheme(3L);
+        Optional<Theme> theme = themeRepository.getById(3L);
 
         assertThat(theme.isEmpty()).isTrue();
     }
@@ -53,7 +52,7 @@ public class ThemeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("전체 예약 테마 정상적으로 가져오는 지 테스트")
     void getAllThemeTest() {
-        List<Theme> reservationTimes = themeRepository.getAllTheme();
+        List<Theme> reservationTimes = themeRepository.getAll();
 
         assertThat(reservationTimes).containsExactly(new Theme(1L, "테마1", "테마 설명", "image url"));
     }
@@ -61,8 +60,8 @@ public class ThemeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("예약 테마 삭제 정상적으로 작동하는 지 테스트")
     void deleteReservationTest() {
-        themeRepository.deleteTheme(1);
-        List<Theme> reservationTimes = themeRepository.getAllTheme();
+        themeRepository.deleteById(1);
+        List<Theme> reservationTimes = themeRepository.getAll();
 
         assertThat(reservationTimes).isNotIn(new Theme(1L, "테마1", "테마 설명", "image url"));
     }
@@ -70,8 +69,8 @@ public class ThemeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("예약 테마 추가 정상적으로 작동하는 지 테스트")
     void insertReservationTest() {
-        Theme theme = themeRepository.addTheme(new Theme( "테마2", "테마 설명", "image url"));
-        List<Theme> reservations = themeRepository.getAllTheme();
+        Theme theme = themeRepository.save(new Theme( "테마2", "테마 설명", "image url"));
+        List<Theme> reservations = themeRepository.getAll();
 
         Theme expectedTheme = new Theme(2L, "테마2", "테마 설명", "image url");
 

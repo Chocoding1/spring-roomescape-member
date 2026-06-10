@@ -69,7 +69,7 @@ public class ThemeServiceTest {
     void deleteFailedByIntegrityTest() {
         when(reservationRepository.existsByThemeId(anyLong())).thenReturn(false);
         doThrow(new DataIntegrityViolationException("정합성 오류"))
-                .when(themeRepository).deleteTheme(anyLong());
+                .when(themeRepository).deleteById(anyLong());
 
         assertThatThrownBy(() -> themeService.deleteTheme(1))
                 .isExactlyInstanceOf(DataReferencedException.class)

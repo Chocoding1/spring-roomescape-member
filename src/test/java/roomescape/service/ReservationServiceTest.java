@@ -50,10 +50,10 @@ public class ReservationServiceTest {
         Theme theme = new Theme(1L, "name", "description", "image");
         LocalDate futureDate = LocalDate.now().plusDays(1);
 
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(reservationTime));
-        when(themeRepository.getTheme(anyLong())).thenReturn(Optional.of(theme));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(reservationTime));
+        when(themeRepository.getById(anyLong())).thenReturn(Optional.of(theme));
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(false);
-        when(reservationRepository.addReservation(any())).thenReturn(new Reservation(1L, "브라운", futureDate, reservationTime, theme));
+        when(reservationRepository.save(any())).thenReturn(new Reservation(1L, "브라운", futureDate, reservationTime, theme));
 
         Reservation reservation = reservationService.addReservation(new AddReservationRequest("브라운", futureDate, 1L, 1L));
 
@@ -77,7 +77,7 @@ public class ReservationServiceTest {
     @DisplayName("오늘 날짜에서 지난 시간 예약 시 예외 발생 테스트")
     void addReservationFailByPastTimeTest() {
         ReservationTime pastTime = new ReservationTime(1L, LocalTime.of(0, 1));
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(pastTime));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(pastTime));
 
         assertThatThrownBy(() -> reservationService.addReservation(
                 new AddReservationRequest("브라운", LocalDate.now(), 1L, 1L)))
@@ -88,7 +88,7 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("예약 생성 시 존재하지 않는 시간ID인 경우 예외 테스트")
     void addReservationFailByInvalidTimeIdTest() {
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.empty());
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.addReservation(
                 new AddReservationRequest("브라운", LocalDate.now().plusDays(1), 1L, 1L)))
@@ -99,8 +99,8 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("예약 생성 시 존재하지 않는 테마 ID인 경우 예외 테스트")
     void addReservationFailByInvalidThemeIdTest() {
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
-        when(themeRepository.getTheme(anyLong())).thenReturn(Optional.empty());
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
+        when(themeRepository.getById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.addReservation(
                 new AddReservationRequest("브라운", LocalDate.now().plusDays(1), 1L, 1L)))
@@ -111,8 +111,8 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("같은 시간, 날짜, themeId가 존재하는 경우 예약 생성 시 예외 테스트")
     void addReservationFailByDuplicatedTimeAndDateAndTheme() {
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
-        when(themeRepository.getTheme(anyLong())).thenReturn(Optional.of(new Theme(1L, "name", "description", "image")));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
+        when(themeRepository.getById(anyLong())).thenReturn(Optional.of(new Theme(1L, "name", "description", "image")));
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(true);
 
         assertThatThrownBy(() -> reservationService.addReservation(
@@ -124,7 +124,7 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("이름으로 삭제할 경우 존재하지 않는 예약 id 입력 시 예외 테스트")
     void deleteReservationByNameFailByNotFoundTest() {
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.empty());
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.deleteReservationByName(1L, "브라운"))
                 .isExactlyInstanceOf(NotFoundResourceException.class)
@@ -137,7 +137,7 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
         assertThatThrownBy(() -> reservationService.deleteReservationByName(1L, "다른이름"))
                 .isExactlyInstanceOf(InvalidRequestException.class)
@@ -150,7 +150,7 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
         assertThatCode(() -> reservationService.deleteReservationByName(1L, "브라운"))
                 .doesNotThrowAnyException();
@@ -159,7 +159,7 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("수정 시 존재하지 않는 예약 id인 경우 예외 테스트")
     void updateReservationFailByNotFoundTest() {
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.empty());
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.updateReservation(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(1), 1L)))
@@ -173,7 +173,7 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
         assertThatThrownBy(() -> reservationService.updateReservation(1L,
                 new UpdateReservationRequest("다른이름", LocalDate.now().plusDays(1), 1L)))
@@ -187,8 +187,8 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.empty());
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.updateReservation(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(1), 999L)))
@@ -202,7 +202,7 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
         assertThatThrownBy(() -> reservationService.updateReservation(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().minusDays(1), 1L)))
@@ -216,8 +216,8 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.of(0, 1))));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.of(0, 1))));
 
         assertThatThrownBy(() -> reservationService.updateReservation(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now(), 1L)))
@@ -231,8 +231,8 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(true);
 
         assertThatThrownBy(() -> reservationService.updateReservation(1L,
@@ -247,11 +247,11 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
-        when(reservationTimeRepository.getReservationTime(anyLong())).thenReturn(Optional.of(new ReservationTime(2L, LocalTime.parse("11:00"))));
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(2L, LocalTime.parse("11:00"))));
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(false);
-        when(reservationRepository.updateReservation(anyLong(), any(), anyLong())).thenReturn(reservation);
-        when(reservationRepository.getReservationById(anyLong())).thenReturn(Optional.of(reservation));
+        when(reservationRepository.updateDateAndTime(anyLong(), any(), anyLong())).thenReturn(reservation);
+        when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
         assertThatCode(() -> reservationService.updateReservation(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(2), 2L)))

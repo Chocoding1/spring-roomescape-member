@@ -47,16 +47,16 @@ public class ReservationRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("전체 예약 테스트 정상적으로 가져오는 지 테스트")
     void getReservationTest() {
-        List<Reservation> reservations = reservationRepository.getAllReservation();
+        List<Reservation> reservations = reservationRepository.getAll();
 
         assertThat(reservations).containsExactly(INIT_RESERVATION);
     }
 
     @Test
     @DisplayName("예약 삭제 정상적으로 작동하는 지 테스트")
-    void deleteReservationTest() {
-        reservationRepository.deleteReservation(1);
-        List<Reservation> reservations = reservationRepository.getAllReservation();
+    void deleteByIdTest() {
+        reservationRepository.deleteById(1);
+        List<Reservation> reservations = reservationRepository.getAll();
 
         assertThat(reservations).isNotIn(INIT_RESERVATION);
     }
@@ -72,9 +72,9 @@ public class ReservationRepositoryTest extends BaseRepositoryTest {
                 new Theme(1L, "theme", "description", "imageUrl")
         );
 
-        reservationRepository.addReservation(reservation);
+        reservationRepository.save(reservation);
 
-        List<Reservation> reservations = reservationRepository.getAllReservation();
+        List<Reservation> reservations = reservationRepository.getAll();
 
         Reservation expectedReservation = new Reservation(2L, "테스트", LocalDate.parse("2023-08-15"), new ReservationTime(1L, LocalTime.parse("10:00")), new Theme(1L, "테마1", "테마 설명", "image url"));
 
@@ -91,7 +91,7 @@ public class ReservationRepositoryTest extends BaseRepositoryTest {
         insertReservation("테스트2", LocalDate.parse("2023-12-15"), 1, 1);
 
 
-        List<Reservation> reservations = reservationRepository.getAllReservationByName("테스트");
+        List<Reservation> reservations = reservationRepository.getAllByName("테스트");
 
         List<Reservation> expectedReservation = List.of(
                 new Reservation(

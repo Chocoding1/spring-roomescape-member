@@ -33,11 +33,11 @@ public class ReservationService {
     }
 
     public List<Reservation> getAllReservation() {
-        return reservationRepository.getAllReservation();
+        return reservationRepository.getAll();
     }
 
     public List<Reservation> getAllReservationsByName(String name) {
-        return reservationRepository.getAllReservationByName(name);
+        return reservationRepository.getAllByName(name);
     }
 
     @Transactional
@@ -45,14 +45,14 @@ public class ReservationService {
         LocalDate reservationDate = addReservationRequest.date();
         validateDate(reservationDate);
 
-        ReservationTime reservationTime = reservationTimeRepository.getReservationTime(addReservationRequest.timeId())
+        ReservationTime reservationTime = reservationTimeRepository.getById(addReservationRequest.timeId())
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
 
         if (reservationDate.isEqual(LocalDate.now())) {
             reservationTime.validateTime();
         }
 
-        Theme theme = themeRepository.getTheme(addReservationRequest.themeId())
+        Theme theme = themeRepository.getById(addReservationRequest.themeId())
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_THEME));
 
         if (reservationRepository.existsByTimeIdAndThemeIdAndDate(
@@ -63,29 +63,29 @@ public class ReservationService {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
         }
 
-        return reservationRepository.addReservation(addReservationRequest.toReservation(reservationTime, theme));
+        return reservationRepository.save(addReservationRequest.toReservation(reservationTime, theme));
     }
 
     @Transactional
     public void deleteReservation(long id) {
-        reservationRepository.deleteReservation(id);
+        reservationRepository.deleteById(id);
     }
 
     @Transactional
     public void deleteReservationByName(long id, String name) {
-        Reservation reservation = reservationRepository.getReservationById(id)
+        Reservation reservation = reservationRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
 
         if (!reservation.name().equals(name)) {
             throw new InvalidRequestException(ErrorCode.UNAUTHORIZED_RESERVATION_ACCESS);
         }
 
-        reservationRepository.deleteReservation(id);
+        reservationRepository.deleteById(id);
     }
 
     @Transactional
     public Reservation updateReservation(long id, UpdateReservationRequest updateReservationRequest) {
-        Reservation reservation = reservationRepository.getReservationById(id)
+        Reservation reservation = reservationRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
 
         if (!reservation.name().equals(updateReservationRequest.name())) {
@@ -95,7 +95,7 @@ public class ReservationService {
         LocalDate reservationDate = updateReservationRequest.date();
         validateDate(reservationDate);
 
-        ReservationTime reservationTime = reservationTimeRepository.getReservationTime(updateReservationRequest.timeId())
+        ReservationTime reservationTime = reservationTimeRepository.getById(updateReservationRequest.timeId())
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
 
         if (reservationDate.isEqual(LocalDate.now())) {
@@ -110,7 +110,7 @@ public class ReservationService {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
         }
 
-        return reservationRepository.updateReservation(id, updateReservationRequest.date(), reservationTime.id());
+        return reservationRepository.updateDateAndTime(id, updateReservationRequest.date(), reservationTime.id());
     }
 
     private void validateDate(LocalDate reservationDate) {

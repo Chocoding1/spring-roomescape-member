@@ -39,7 +39,7 @@ public class ReservationTimeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("특정 예약 시간 정상적으로 가져오는 지 테스트")
     void getReservationTimeTest() {
-        Optional<ReservationTime> reservationTime = reservationTimeRepository.getReservationTime(1);
+        Optional<ReservationTime> reservationTime = reservationTimeRepository.getById(1);
 
         assertThat(reservationTime.isPresent()).isTrue();
         assertThat(reservationTime.get()).isEqualTo(new ReservationTime(1L, LocalTime.parse("10:00")));
@@ -48,7 +48,7 @@ public class ReservationTimeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("존재하지 않는 특정 예약 시간 빈 값으로 가져오는 지 테스트")
     void getInvalidReservationTimeTest() {
-        Optional<ReservationTime> reservationTime = reservationTimeRepository.getReservationTime(3);
+        Optional<ReservationTime> reservationTime = reservationTimeRepository.getById(3);
 
         assertThat(reservationTime.isEmpty()).isTrue();
     }
@@ -56,7 +56,7 @@ public class ReservationTimeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("전체 예약시간 정상적으로 가져오는 지 테스트")
     void getReservationTimesTest() {
-        List<ReservationTime> reservationTimes = reservationTimeRepository.getAllReservationTime();
+        List<ReservationTime> reservationTimes = reservationTimeRepository.getAll();
 
         assertThat(reservationTimes).containsExactly(new ReservationTime(1L, LocalTime.parse("10:00")));
     }
@@ -64,8 +64,8 @@ public class ReservationTimeRepositoryTest extends BaseRepositoryTest {
     @Test
     @DisplayName("예약 시간 삭제 정상적으로 작동하는 지 테스트")
     void deleteReservationTest() {
-        reservationTimeRepository.deleteReservationTime(1);
-        List<ReservationTime> reservationTimes = reservationTimeRepository.getAllReservationTime();
+        reservationTimeRepository.deleteById(1);
+        List<ReservationTime> reservationTimes = reservationTimeRepository.getAll();
 
         assertThat(reservationTimes).isNotIn(new ReservationTime(1L, LocalTime.parse("10:00")));
     }
@@ -74,9 +74,9 @@ public class ReservationTimeRepositoryTest extends BaseRepositoryTest {
     @DisplayName("예약 시간 추가 정상적으로 작동하는 지 테스트")
     void insertReservationTest() {
 
-        reservationTimeRepository.addReservationTime(new ReservationTime(LocalTime.parse("12:00")));
+        reservationTimeRepository.save(new ReservationTime(LocalTime.parse("12:00")));
 
-        List<ReservationTime> reservations = reservationTimeRepository.getAllReservationTime();
+        List<ReservationTime> reservations = reservationTimeRepository.getAll();
 
         ReservationTime expectedReservation = new ReservationTime(2L, LocalTime.parse("12:00"));
 

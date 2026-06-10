@@ -4,7 +4,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.reservationTime.ReservationTime;
-import roomescape.domain.reservationTime.ReservationTimeCondition;
 import roomescape.domain.reservationTime.ReservationTimeWithAvailable;
 import roomescape.dto.reservationTime.AddReservationTimeRequest;
 import roomescape.dto.reservationTime.AvailableReservationTimeRequest;
@@ -29,7 +28,7 @@ public class ReservationTimeService {
     }
 
     public List<ReservationTime> getAllReservationTime() {
-        return reservationTimeRepository.getAllReservationTime();
+        return reservationTimeRepository.getAll();
     }
 
     @Transactional
@@ -38,7 +37,7 @@ public class ReservationTimeService {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION_TIME);
         }
 
-        return reservationTimeRepository.addReservationTime(addReservationTimeRequest.toReservationTime());
+        return reservationTimeRepository.save(addReservationTimeRequest.toReservationTime());
     }
 
     @Transactional
@@ -50,7 +49,7 @@ public class ReservationTimeService {
         }
 
         try {
-            reservationTimeRepository.deleteReservationTime(id);
+            reservationTimeRepository.deleteById(id);
         }  catch(DataIntegrityViolationException e) {
             throw new DataReferencedException(INTEGRITY_VIOLATION_ON_DELETE);
         }

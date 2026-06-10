@@ -35,15 +35,15 @@ public class ThemeService {
             throw new DuplicatedResourceException(DUPLICATED_THEME);
         }
 
-        return themeRepository.addTheme(addThemeRequest.toTheme());
+        return themeRepository.save(addThemeRequest.toTheme());
     }
 
     public List<Theme> getAllTheme() {
-        return themeRepository.getAllTheme();
+        return themeRepository.getAll();
     }
 
     public Theme getTheme(long id) {
-        return themeRepository.getTheme(id)
+        return themeRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(ErrorCode.NOT_FOUND_THEME));
     }
 
@@ -56,7 +56,7 @@ public class ThemeService {
         }
 
         try {
-            themeRepository.deleteTheme(id);
+            themeRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DataReferencedException(ErrorCode.INTEGRITY_VIOLATION_ON_DELETE);
         }
