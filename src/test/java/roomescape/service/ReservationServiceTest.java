@@ -45,7 +45,7 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("예약 생성 시 유효한 시간 ID, 테마 ID인 경우 정상 작동 테스트")
-    void addReservationTest() {
+    void bookTest() {
         ReservationTime reservationTime = new ReservationTime(1L, LocalTime.parse("10:00"));
         Theme theme = new Theme(1L, "name", "description", "image");
         LocalDate futureDate = LocalDate.now().plusDays(1);
@@ -55,7 +55,7 @@ public class ReservationServiceTest {
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(false);
         when(reservationRepository.save(any())).thenReturn(new Reservation(1L, "브라운", futureDate, reservationTime, theme));
 
-        Reservation reservation = reservationService.addReservation(new AddReservationRequest("브라운", futureDate, 1L, 1L));
+        Reservation reservation = reservationService.book(new AddReservationRequest("브라운", futureDate, 1L, 1L));
 
         assertThat(reservation)
                 .usingRecursiveComparison()
@@ -64,10 +64,10 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("예약 생성 시 지나간 날짜인 경우 예외 테스트")
-    void addReservationFailByPastDateTest() {
+    void bookFailByPastDateTest() {
         ReservationTime reservationTime = new ReservationTime(1L, LocalTime.parse("10:00"));
 
-        assertThatThrownBy(() -> reservationService.addReservation(
+        assertThatThrownBy(() -> reservationService.book(
                 new AddReservationRequest("브라운", LocalDate.now().minusDays(1), 1L, 1L)))
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage(INVALID_RESERVATION_DATE.getMessage());
@@ -75,11 +75,11 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("오늘 날짜에서 지난 시간 예약 시 예외 발생 테스트")
-    void addReservationFailByPastTimeTest() {
+    void bookFailByPastTimeTest() {
         ReservationTime pastTime = new ReservationTime(1L, LocalTime.of(0, 1));
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(pastTime));
 
-        assertThatThrownBy(() -> reservationService.addReservation(
+        assertThatThrownBy(() -> reservationService.book(
                 new AddReservationRequest("브라운", LocalDate.now(), 1L, 1L)))
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage(INVALID_RESERVATION_TIME.getMessage());
@@ -87,10 +87,10 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("예약 생성 시 존재하지 않는 시간ID인 경우 예외 테스트")
-    void addReservationFailByInvalidTimeIdTest() {
+    void bookFailByInvalidTimeIdTest() {
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> reservationService.addReservation(
+        assertThatThrownBy(() -> reservationService.book(
                 new AddReservationRequest("브라운", LocalDate.now().plusDays(1), 1L, 1L)))
                 .isExactlyInstanceOf(NotFoundResourceException.class)
                 .hasMessage(NOT_FOUND_RESERVATION_TIME.getMessage());
@@ -98,11 +98,11 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("예약 생성 시 존재하지 않는 테마 ID인 경우 예외 테스트")
-    void addReservationFailByInvalidThemeIdTest() {
+    void bookFailByInvalidThemeIdTest() {
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
         when(themeRepository.getById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> reservationService.addReservation(
+        assertThatThrownBy(() -> reservationService.book(
                 new AddReservationRequest("브라운", LocalDate.now().plusDays(1), 1L, 1L)))
                 .isExactlyInstanceOf(NotFoundResourceException.class)
                 .hasMessage(NOT_FOUND_THEME.getMessage());
@@ -110,12 +110,12 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("같은 시간, 날짜, themeId가 존재하는 경우 예약 생성 시 예외 테스트")
-    void addReservationFailByDuplicatedTimeAndDateAndTheme() {
+    void bookFailByDuplicatedTimeAndDateAndTheme() {
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
         when(themeRepository.getById(anyLong())).thenReturn(Optional.of(new Theme(1L, "name", "description", "image")));
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(true);
 
-        assertThatThrownBy(() -> reservationService.addReservation(
+        assertThatThrownBy(() -> reservationService.book(
                 new AddReservationRequest("브라운", LocalDate.now().plusDays(1), 1L, 1L)))
                 .isExactlyInstanceOf(DuplicatedResourceException.class)
                 .hasMessage(DUPLICATED_RESERVATION.getMessage());
@@ -123,45 +123,45 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("이름으로 삭제할 경우 존재하지 않는 예약 id 입력 시 예외 테스트")
-    void deleteReservationByNameFailByNotFoundTest() {
+    void cancelByNameFailByNotFoundTest() {
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> reservationService.deleteReservationByName(1L, "브라운"))
+        assertThatThrownBy(() -> reservationService.cancelByName(1L, "브라운"))
                 .isExactlyInstanceOf(NotFoundResourceException.class)
                 .hasMessage(NOT_FOUND_RESERVATION.getMessage());
     }
 
     @Test
     @DisplayName("이름으로 삭제할 경우 이름 불일치 시 삭제 예외 테스트")
-    void deleteReservationByNameFailByNameMismatchTest() {
+    void cancelByNameFailByNameMismatchTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
-        assertThatThrownBy(() -> reservationService.deleteReservationByName(1L, "다른이름"))
+        assertThatThrownBy(() -> reservationService.cancelByName(1L, "다른이름"))
                 .isExactlyInstanceOf(InvalidRequestException.class)
                 .hasMessage(UNAUTHORIZED_RESERVATION_ACCESS.getMessage());
     }
 
     @Test
     @DisplayName("정상적으로 예약 삭제 테스트")
-    void deleteReservationByNameTest() {
+    void cancelByNameTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
-        assertThatCode(() -> reservationService.deleteReservationByName(1L, "브라운"))
+        assertThatCode(() -> reservationService.cancelByName(1L, "브라운"))
                 .doesNotThrowAnyException();
     }
 
     @Test
     @DisplayName("수정 시 존재하지 않는 예약 id인 경우 예외 테스트")
-    void updateReservationFailByNotFoundTest() {
+    void rescheduleFailByNotFoundTest() {
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> reservationService.updateReservation(1L,
+        assertThatThrownBy(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(1), 1L)))
                 .isExactlyInstanceOf(NotFoundResourceException.class)
                 .hasMessage(NOT_FOUND_RESERVATION.getMessage());
@@ -169,13 +169,13 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("수정 시 이름 불일치인 경우 예외 테스트")
-    void updateReservationFailByNameMismatchTest() {
+    void rescheduleFailByNameMismatchTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
-        assertThatThrownBy(() -> reservationService.updateReservation(1L,
+        assertThatThrownBy(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("다른이름", LocalDate.now().plusDays(1), 1L)))
                 .isExactlyInstanceOf(InvalidRequestException.class)
                 .hasMessage(UNAUTHORIZED_RESERVATION_ACCESS.getMessage());
@@ -183,14 +183,14 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("수정 시 존재하지 않는 timeId인 경우 예외 테스트")
-    void updateReservationFailByInvalidTimeIdTest() {
+    void rescheduleFailByInvalidTimeIdTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> reservationService.updateReservation(1L,
+        assertThatThrownBy(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(1), 999L)))
                 .isExactlyInstanceOf(NotFoundResourceException.class)
                 .hasMessage(NOT_FOUND_RESERVATION_TIME.getMessage());
@@ -198,13 +198,13 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("수정 시 지난 날짜인 경우 예외 테스트")
-    void updateReservationFailByPastDateTest() {
+    void rescheduleFailByPastDateTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
-        assertThatThrownBy(() -> reservationService.updateReservation(1L,
+        assertThatThrownBy(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().minusDays(1), 1L)))
                 .isExactlyInstanceOf(InvalidRequestException.class)
                 .hasMessage(INVALID_RESERVATION_DATE.getMessage());
@@ -212,14 +212,14 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("수정 시 오늘 날짜 + 지난 시간인 경우 예외 테스트")
-    void updateReservationFailByPastTimeTest() {
+    void rescheduleFailByPastTimeTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.of(0, 1))));
 
-        assertThatThrownBy(() -> reservationService.updateReservation(1L,
+        assertThatThrownBy(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now(), 1L)))
                 .isExactlyInstanceOf(InvalidRequestException.class)
                 .hasMessage(INVALID_RESERVATION_TIME.getMessage());
@@ -227,7 +227,7 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("수정 시 이미 해당 테마와 날짜와 시간에 예약이 존재하는 경우 예외 테스트")
-    void updateReservationFailByDuplicatedTest() {
+    void rescheduleFailByDuplicatedTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
@@ -235,7 +235,7 @@ public class ReservationServiceTest {
         when(reservationTimeRepository.getById(anyLong())).thenReturn(Optional.of(new ReservationTime(1L, LocalTime.parse("10:00"))));
         when(reservationRepository.existsByTimeIdAndThemeIdAndDate(anyLong(), anyLong(), any())).thenReturn(true);
 
-        assertThatThrownBy(() -> reservationService.updateReservation(1L,
+        assertThatThrownBy(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(1), 1L)))
                 .isExactlyInstanceOf(DuplicatedResourceException.class)
                 .hasMessage(DUPLICATED_RESERVATION.getMessage());
@@ -243,7 +243,7 @@ public class ReservationServiceTest {
 
     @Test
     @DisplayName("정상적으로 예약 수정 테스트")
-    void updateReservationTest() {
+    void rescheduleTest() {
         Reservation reservation = new Reservation(1L, "브라운", LocalDate.now().plusDays(1),
                 new ReservationTime(1L, LocalTime.parse("10:00")),
                 new Theme(1L, "name", "description", "image"));
@@ -253,7 +253,7 @@ public class ReservationServiceTest {
         when(reservationRepository.updateDateAndTime(anyLong(), any(), anyLong())).thenReturn(reservation);
         when(reservationRepository.getById(anyLong())).thenReturn(Optional.of(reservation));
 
-        assertThatCode(() -> reservationService.updateReservation(1L,
+        assertThatCode(() -> reservationService.reschedule(1L,
                 new UpdateReservationRequest("브라운", LocalDate.now().plusDays(2), 2L)))
                 .doesNotThrowAnyException();
     }

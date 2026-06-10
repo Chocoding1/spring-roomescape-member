@@ -30,7 +30,7 @@ public class ThemeService {
     }
 
     @Transactional
-    public Theme addTheme(AddThemeRequest addThemeRequest) {
+    public Theme register(AddThemeRequest addThemeRequest) {
         if (themeRepository.existsByName(addThemeRequest.name())) {
             throw new DuplicatedResourceException(DUPLICATED_THEME);
         }
@@ -38,17 +38,17 @@ public class ThemeService {
         return themeRepository.save(addThemeRequest.toTheme());
     }
 
-    public List<Theme> getAllTheme() {
+    public List<Theme> getAll() {
         return themeRepository.getAll();
     }
 
-    public Theme getTheme(long id) {
+    public Theme getById(long id) {
         return themeRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(ErrorCode.NOT_FOUND_THEME));
     }
 
     @Transactional
-    public void deleteTheme(long id) {
+    public void delete(long id) {
         boolean hasTheme = reservationRepository.existsByThemeId(id);
 
         if(hasTheme) {

@@ -39,7 +39,7 @@ class ThemeControllerTest {
     @Test
     @DisplayName("테마 목록 조회 시 200과 바디를 반환한다")
     void getThemes() throws Exception {
-        given(themeService.getAllTheme())
+        given(themeService.getAll())
                 .willReturn(List.of(theme));
 
         mockMvc.perform(get("/themes"))
@@ -52,8 +52,8 @@ class ThemeControllerTest {
 
     @Test
     @DisplayName("테마 추가 시 201과 바디를 반환한다")
-    void addTheme() throws Exception {
-        given(themeService.addTheme(any()))
+    void createTheme() throws Exception {
+        given(themeService.register(any()))
                 .willReturn(theme);
 
         String requestBody = """
@@ -76,7 +76,7 @@ class ThemeControllerTest {
 
     @Test
     @DisplayName("필수 값 없이 테마 추가 시 400을 반환한다")
-    void addThemeWithInvalidRequest() throws Exception {
+    void createThemeWithInvalidRequest() throws Exception {
         mockMvc.perform(post("/themes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))

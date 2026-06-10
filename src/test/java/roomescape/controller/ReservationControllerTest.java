@@ -12,7 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.reservationTime.ReservationTime;
-import roomescape.dto.reservation.GetReservationByNameRequest;
 import roomescape.service.ReservationService;
 
 import java.time.LocalDate;
@@ -53,7 +52,7 @@ class ReservationControllerTest {
     @Test
     @DisplayName("예약 목록 조회 시 200과 바디를 반환한다")
     void getReservations() throws Exception {
-        given(reservationService.getAllReservation())
+        given(reservationService.findAll())
                 .willReturn(List.of(reservation));
 
         mockMvc.perform(get("/reservations"))
@@ -69,8 +68,8 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("예약 추가 시 201과 바디를 반환한다")
-    void addReservation() throws Exception {
-        given(reservationService.addReservation(any()))
+    void createReservation() throws Exception {
+        given(reservationService.book(any()))
                 .willReturn(reservation);
 
         String requestBody = """
@@ -104,7 +103,7 @@ class ReservationControllerTest {
     @DisplayName("이름으로 예약 조회 시 200과 바디를 반환한다")
     void getReservationByName() throws Exception {
         String name = "홍길동";
-        given(reservationService.getAllReservationsByName(name))
+        given(reservationService.findAllByName(name))
                 .willReturn(List.of(reservation));
 
         mockMvc.perform(get("/reservations")
@@ -115,7 +114,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("필수 값 없이 예약 추가 시 400을 반환한다")
-    void addReservationWithInvalidRequest() throws Exception {
+    void createReservationWithInvalidRequest() throws Exception {
         mockMvc.perform(post("/reservations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))

@@ -25,7 +25,7 @@ public class ThemeController {
 
     @GetMapping()
     public ResponseEntity<List<ThemeResponse>> getThemes() {
-        List<Theme> themes = themeService.getAllTheme();
+        List<Theme> themes = themeService.getAll();
         List<ThemeResponse> themeResponses = themes.stream()
                 .map(ThemeResponse::from)
                 .toList();
@@ -35,21 +35,21 @@ public class ThemeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ThemeResponse> getTheme(@PathVariable long id) {
-        Theme theme = themeService.getTheme(id);
+        Theme theme = themeService.getById(id);
 
         return ResponseEntity.ok(ThemeResponse.from(theme));
     }
 
     @PostMapping()
-    public ResponseEntity<ThemeResponse> addTheme(@RequestBody @Valid AddThemeRequest addThemeRequest) {
-        Theme addedTheme = themeService.addTheme(addThemeRequest);
+    public ResponseEntity<ThemeResponse> createTheme(@RequestBody @Valid AddThemeRequest addThemeRequest) {
+        Theme addedTheme = themeService.register(addThemeRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ThemeResponse.from(addedTheme));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTheme(@PathVariable long id) {
-        themeService.deleteTheme(id);
+        themeService.delete(id);
 
         return ResponseEntity.noContent().build();
     }

@@ -27,12 +27,12 @@ public class ReservationTimeService {
         this.reservationRepository = reservationRepository;
     }
 
-    public List<ReservationTime> getAllReservationTime() {
+    public List<ReservationTime> getAll() {
         return reservationTimeRepository.getAll();
     }
 
     @Transactional
-    public ReservationTime addReservationTime(AddReservationTimeRequest addReservationTimeRequest) {
+    public ReservationTime register(AddReservationTimeRequest addReservationTimeRequest) {
         if (reservationTimeRepository.existsByStartAt(addReservationTimeRequest.startAt())) {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION_TIME);
         }
@@ -41,7 +41,7 @@ public class ReservationTimeService {
     }
 
     @Transactional
-    public void deleteReservationTime(long id) {
+    public void delete(long id) {
         boolean hasTimeId = reservationRepository.existsByTimeId(id);
 
         if(hasTimeId) {

@@ -21,7 +21,7 @@ public class ReservationController {
 
     @GetMapping()
     public ResponseEntity<List<ReservationResponse>> getReservations() {
-        List<Reservation> reservations = reservationService.getAllReservation();
+        List<Reservation> reservations = reservationService.findAll();
         List<ReservationResponse> reservationResponses = reservations.stream()
                 .map(ReservationResponse::from)
                 .toList();
@@ -30,17 +30,17 @@ public class ReservationController {
     }
 
     @PostMapping()
-    public ResponseEntity<ReservationResponse> addReservation(
+    public ResponseEntity<ReservationResponse> createReservation(
             @RequestBody @Valid AddReservationRequest addReservationRequest
     ) {
-        Reservation addedReservation = reservationService.addReservation(addReservationRequest);
+        Reservation addedReservation = reservationService.book(addReservationRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.from(addedReservation));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReservation(@PathVariable("id") long id) {
-        reservationService.deleteReservation(id);
+        reservationService.cancel(id);
 
         return ResponseEntity.noContent().build();
     }
@@ -49,7 +49,7 @@ public class ReservationController {
     public ResponseEntity<List<ReservationResponse>> getReservationsByName(
             @ModelAttribute @Valid GetReservationByNameRequest getReservationByNameRequest
     ) {
-        List<Reservation> reservations = reservationService.getAllReservationsByName(getReservationByNameRequest.name());
+        List<Reservation> reservations = reservationService.findAllByName(getReservationByNameRequest.name());
         List<ReservationResponse> reservationResponses = reservations.stream()
                 .map(ReservationResponse::from)
                 .toList();
@@ -62,7 +62,7 @@ public class ReservationController {
             @PathVariable("id") long id,
             @ModelAttribute @Valid DeleteReservationRequest deleteReservationRequest
     ) {
-        reservationService.deleteReservationByName(id, deleteReservationRequest.name());
+        reservationService.cancelByName(id, deleteReservationRequest.name());
 
         return ResponseEntity.noContent().build();
     }
@@ -72,7 +72,7 @@ public class ReservationController {
             @PathVariable long id,
             @RequestBody @Valid UpdateReservationRequest updateReservationRequest
     ) {
-        Reservation reservation = reservationService.updateReservation(id, updateReservationRequest);
+        Reservation reservation = reservationService.reschedule(id, updateReservationRequest);
 
         return ResponseEntity.ok(ReservationResponse.from(reservation));
     }

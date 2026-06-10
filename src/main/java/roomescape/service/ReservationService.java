@@ -32,16 +32,16 @@ public class ReservationService {
         this.themeRepository = themeRepository;
     }
 
-    public List<Reservation> getAllReservation() {
+    public List<Reservation> findAll() {
         return reservationRepository.getAll();
     }
 
-    public List<Reservation> getAllReservationsByName(String name) {
+    public List<Reservation> findAllByName(String name) {
         return reservationRepository.getAllByName(name);
     }
 
     @Transactional
-    public Reservation addReservation(AddReservationRequest addReservationRequest) {
+    public Reservation book(AddReservationRequest addReservationRequest) {
         LocalDate reservationDate = addReservationRequest.date();
         validateDate(reservationDate);
 
@@ -65,12 +65,12 @@ public class ReservationService {
     }
 
     @Transactional
-    public void deleteReservation(long id) {
+    public void cancel(long id) {
         reservationRepository.deleteById(id);
     }
 
     @Transactional
-    public void deleteReservationByName(long id, String name) {
+    public void cancelByName(long id, String name) {
         Reservation reservation = reservationRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
 
@@ -82,7 +82,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation updateReservation(long id, UpdateReservationRequest updateReservationRequest) {
+    public Reservation reschedule(long id, UpdateReservationRequest updateReservationRequest) {
         Reservation reservation = reservationRepository.getById(id)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
 

@@ -35,10 +35,10 @@ public class ThemeServiceTest {
 
     @Test
     @DisplayName("동일한 이름의 테마가 존재하는 경우 테마 추가 시 예외 테스트")
-    void addThemeFailedWhenDuplicatedTest() {
+    void registerFailedWhenDuplicatedTest() {
         when(themeRepository.existsByName(any())).thenReturn(true);
 
-        assertThatThrownBy(() -> themeService.addTheme(
+        assertThatThrownBy(() -> themeService.register(
                 new AddThemeRequest("테마1", "테마 설명", "image url")
         ))
                 .isExactlyInstanceOf(DuplicatedResourceException.class)
@@ -47,10 +47,10 @@ public class ThemeServiceTest {
 
     @Test
     @DisplayName("정상 삭제 테스트")
-    void deleteThemeTest() {
+    void deleteTest() {
         when(reservationRepository.existsByThemeId(anyLong())).thenReturn(false);
 
-        assertThatCode(() -> themeService.deleteTheme(1))
+        assertThatCode(() -> themeService.delete(1))
                 .doesNotThrowAnyException();
     }
 
@@ -59,7 +59,7 @@ public class ThemeServiceTest {
     void deleteFailedWhenInUseTest() {
         when(reservationRepository.existsByThemeId(anyLong())).thenReturn(true);
 
-        assertThatThrownBy(() -> themeService.deleteTheme(1))
+        assertThatThrownBy(() -> themeService.delete(1))
                 .isExactlyInstanceOf(DataReferencedException.class)
                 .hasMessage(CANNOT_DELETE_THEME_IN_USE.getMessage());
     }
@@ -71,7 +71,7 @@ public class ThemeServiceTest {
         doThrow(new DataIntegrityViolationException("정합성 오류"))
                 .when(themeRepository).deleteById(anyLong());
 
-        assertThatThrownBy(() -> themeService.deleteTheme(1))
+        assertThatThrownBy(() -> themeService.delete(1))
                 .isExactlyInstanceOf(DataReferencedException.class)
                 .hasMessage(INTEGRITY_VIOLATION_ON_DELETE.getMessage());
     }

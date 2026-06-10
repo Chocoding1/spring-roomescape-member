@@ -38,10 +38,10 @@ public class ReservationTimeServiceTest {
 
     @Test
     @DisplayName("동일한 시간이 존재하는 경우 예약 시간 생성 시 예외 테스트")
-    void addReservationTimeFailedWhenDuplicatedTest() {
+    void registerFailedWhenDuplicatedTest() {
         when(reservationTimeRepository.existsByStartAt(any())).thenReturn(true);
 
-        assertThatThrownBy(() -> reservationTimeService.addReservationTime(
+        assertThatThrownBy(() -> reservationTimeService.register(
                 new AddReservationTimeRequest(LocalTime.parse("10:00"))
         ))
                 .isExactlyInstanceOf(DuplicatedResourceException.class)
@@ -50,10 +50,10 @@ public class ReservationTimeServiceTest {
 
     @Test
     @DisplayName("정상 삭제 테스트")
-    void deleteReservationTimeTest() {
+    void deleteTest() {
         when(reservationRepository.existsByTimeId(anyLong())).thenReturn(false);
 
-        assertThatCode(() -> reservationTimeService.deleteReservationTime(1))
+        assertThatCode(() -> reservationTimeService.delete(1))
                 .doesNotThrowAnyException();
     }
 
@@ -62,7 +62,7 @@ public class ReservationTimeServiceTest {
     void deleteFailedWhenInUseTest() {
         when(reservationRepository.existsByTimeId(anyLong())).thenReturn(true);
 
-        assertThatThrownBy(() -> reservationTimeService.deleteReservationTime(1))
+        assertThatThrownBy(() -> reservationTimeService.delete(1))
                 .isExactlyInstanceOf(DataReferencedException.class)
                 .hasMessage(ErrorCode.CANNOT_DELETE_RESERVATION_TIME_IN_USE.getMessage());
     }
@@ -74,7 +74,7 @@ public class ReservationTimeServiceTest {
         doThrow(new DataIntegrityViolationException("정합성 오류"))
                 .when(reservationTimeRepository).deleteById(anyLong());
 
-        assertThatThrownBy(() -> reservationTimeService.deleteReservationTime(1))
+        assertThatThrownBy(() -> reservationTimeService.delete(1))
                 .isExactlyInstanceOf(DataReferencedException.class)
                 .hasMessage(ErrorCode.INTEGRITY_VIOLATION_ON_DELETE.getMessage());
     }

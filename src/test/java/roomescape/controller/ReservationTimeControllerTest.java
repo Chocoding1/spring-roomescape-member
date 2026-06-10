@@ -42,7 +42,7 @@ class ReservationTimeControllerTest {
     @Test
     @DisplayName("시간 목록 조회 시 200과 바디를 반환한다")
     void getReservationTimes() throws Exception {
-        given(reservationTimeService.getAllReservationTime())
+        given(reservationTimeService.getAll())
                 .willReturn(List.of(reservationTime));
 
         mockMvc.perform(get("/times"))
@@ -53,8 +53,8 @@ class ReservationTimeControllerTest {
 
     @Test
     @DisplayName("시간 추가 시 201과 바디를 반환한다")
-    void addReservationTime() throws Exception {
-        given(reservationTimeService.addReservationTime(any()))
+    void createReservationTime() throws Exception {
+        given(reservationTimeService.register(any()))
                 .willReturn(reservationTime);
 
         String requestBody = """
@@ -73,7 +73,7 @@ class ReservationTimeControllerTest {
 
     @Test
     @DisplayName("잘못된 시간 형식으로 추가 시 400을 반환한다")
-    void addReservationTimeWithInvalidFormat() throws Exception {
+    void createReservationTimeWithInvalidFormat() throws Exception {
         String requestBody = """
             {
                 "startAt": "1000"
@@ -88,7 +88,7 @@ class ReservationTimeControllerTest {
 
     @Test
     @DisplayName("시간 값 없이 추가 시 400을 반환한다")
-    void addReservationTimeWithBlank() throws Exception {
+    void createReservationTimeWithBlank() throws Exception {
         mockMvc.perform(post("/times")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))

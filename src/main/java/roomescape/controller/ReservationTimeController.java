@@ -25,7 +25,7 @@ public class ReservationTimeController {
 
     @GetMapping()
     public ResponseEntity<List<ReservationTimeResponse>> getReservationTimes() {
-        List<ReservationTime> reservationTimes = reservationTimeService.getAllReservationTime();
+        List<ReservationTime> reservationTimes = reservationTimeService.getAll();
         List<ReservationTimeResponse> reservationTimeResponses = reservationTimes.stream()
                 .map(ReservationTimeResponse::from)
                 .toList();
@@ -34,17 +34,17 @@ public class ReservationTimeController {
     }
 
     @PostMapping()
-    public ResponseEntity<ReservationTimeResponse> addReservationTime(
+    public ResponseEntity<ReservationTimeResponse> createReservationTime(
             @RequestBody @Valid AddReservationTimeRequest addReservationTimeRequest
     ) {
-        ReservationTime reservationTime = reservationTimeService.addReservationTime(addReservationTimeRequest);
+        ReservationTime reservationTime = reservationTimeService.register(addReservationTimeRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ReservationTimeResponse.from(reservationTime));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReservationTime(@PathVariable("id") long id) {
-        reservationTimeService.deleteReservationTime(id);
+        reservationTimeService.delete(id);
 
         return ResponseEntity.noContent().build();
     }
