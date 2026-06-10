@@ -45,21 +45,19 @@ public class ReservationService {
         LocalDate reservationDate = addReservationRequest.date();
         validateDate(reservationDate);
 
-        ReservationTime reservationTime = reservationTimeRepository.getById(addReservationRequest.timeId())
+        Long timeId = addReservationRequest.timeId();
+        ReservationTime reservationTime = reservationTimeRepository.getById(timeId)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
 
         if (reservationDate.isEqual(LocalDate.now())) {
             reservationTime.validateTime();
         }
 
-        Theme theme = themeRepository.getById(addReservationRequest.themeId())
+        Long themeId = addReservationRequest.themeId();
+        Theme theme = themeRepository.getById(themeId)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_THEME));
 
-        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(
-                addReservationRequest.timeId(),
-                addReservationRequest.themeId(),
-                addReservationRequest.date())
-        ) {
+        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(timeId, themeId, reservationDate)) {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
         }
 
@@ -92,25 +90,23 @@ public class ReservationService {
             throw new InvalidRequestException(UNAUTHORIZED_RESERVATION_ACCESS);
         }
 
-        LocalDate reservationDate = updateReservationRequest.date();
-        validateDate(reservationDate);
+        LocalDate updateDate = updateReservationRequest.date();
+        validateDate(updateDate);
 
-        ReservationTime reservationTime = reservationTimeRepository.getById(updateReservationRequest.timeId())
+        Long updateTimeId = updateReservationRequest.timeId();
+        ReservationTime reservationTime = reservationTimeRepository.getById(updateTimeId)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
 
-        if (reservationDate.isEqual(LocalDate.now())) {
+        if (updateDate.isEqual(LocalDate.now())) {
             reservationTime.validateTime();
         }
 
-        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(
-                updateReservationRequest.timeId(),
-                reservation.theme().id(),
-                updateReservationRequest.date()
-        )) {
+        Long themeId = reservation.theme().id();
+        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(updateTimeId, themeId, updateDate)) {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
         }
 
-        return reservationRepository.updateDateAndTime(id, updateReservationRequest.date(), reservationTime.id());
+        return reservationRepository.updateDateAndTime(id, updateDate, updateTimeId);
     }
 
     private void validateDate(LocalDate reservationDate) {
