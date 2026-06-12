@@ -7,7 +7,6 @@ import roomescape.domain.reservationTime.ReservationTime;
 import roomescape.domain.theme.Theme;
 import roomescape.dto.reservation.AddReservationRequest;
 import roomescape.dto.reservation.UpdateReservationRequest;
-import roomescape.exception.dto.ErrorCode;
 import roomescape.exception.exception.DuplicatedResourceException;
 import roomescape.exception.exception.InvalidRequestException;
 import roomescape.exception.exception.NotFoundResourceException;
@@ -41,27 +40,27 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation book(AddReservationRequest addReservationRequest) {
-        LocalDate reservationDate = addReservationRequest.date();
-        validateDate(reservationDate);
+    public Reservation book(AddReservationRequest request) {
+        ReservationTime reservationTime = findReservationTime(request.timeId());
+        Theme theme = findTheme(request.themeId());
 
-        Long timeId = addReservationRequest.timeId();
-        ReservationTime reservationTime = reservationTimeRepository.getById(timeId)
-                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
+        validateDuplication(request.timeId(), request.themeId(), request.date());
 
-        if (reservationDate.isEqual(LocalDate.now())) {
-            reservationTime.validateTime();
-        }
+        Reservation reservation = request.toReservation(reservationTime, theme);
+        reservation.validateBookingPolicy();
 
-        Long themeId = addReservationRequest.themeId();
-        Theme theme = themeRepository.getById(themeId)
-                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_THEME));
+        return reservationRepository.save(reservation);
+    }
 
-        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(timeId, themeId, reservationDate)) {
-            throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
-        }
+    @Transactional
+    public Reservation reschedule(long id, UpdateReservationRequest request) {
+        Reservation reservation = findReservation(id);
+        reservation.validateOwner(request.name());
 
-        return reservationRepository.save(addReservationRequest.toReservation(reservationTime, theme));
+        validateSchedule(request.date(), request.timeId());
+        validateDuplication(request.timeId(), reservation.theme().id(), request.date());
+
+        return reservationRepository.updateDateAndTime(id, request.date(), request.timeId());
     }
 
     @Transactional
@@ -71,46 +70,46 @@ public class ReservationService {
 
     @Transactional
     public void cancelByName(long id, String name) {
-        Reservation reservation = reservationRepository.getById(id)
-                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
+        Reservation reservation = findReservation(id);
 
         reservation.validateOwner(name);
 
         reservationRepository.deleteById(id);
     }
 
-    @Transactional
-    public Reservation reschedule(long id, UpdateReservationRequest updateReservationRequest) {
-        Reservation reservation = reservationRepository.getById(id)
-                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
-
-        if (!reservation.name().equals(updateReservationRequest.name())) {
-            throw new InvalidRequestException(UNAUTHORIZED_RESERVATION_ACCESS);
-        }
-
-        LocalDate updateDate = updateReservationRequest.date();
-        validateDate(updateDate);
-
-        Long updateTimeId = updateReservationRequest.timeId();
-        ReservationTime reservationTime = reservationTimeRepository.getById(updateTimeId)
+    private ReservationTime findReservationTime(Long timeId) {
+        return reservationTimeRepository.getById(timeId)
                 .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION_TIME));
+    }
 
-        if (updateDate.isEqual(LocalDate.now())) {
-            reservationTime.validateTime();
-        }
+    private Theme findTheme(Long themeId) {
+        return themeRepository.getById(themeId)
+                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_THEME));
+    }
 
-        Long themeId = reservation.theme().id();
-        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(updateTimeId, themeId, updateDate)) {
+    private void validateDuplication(Long timeId, Long themeId, LocalDate reservationDate) {
+        if (reservationRepository.existsByTimeIdAndThemeIdAndDate(timeId, themeId, reservationDate)) {
             throw new DuplicatedResourceException(DUPLICATED_RESERVATION);
         }
+    }
 
-        return reservationRepository.updateDateAndTime(id, updateDate, updateTimeId);
+    private void validateSchedule(LocalDate date, Long timeId) {
+        ReservationTime reservationTime = findReservationTime(timeId);
+
+        validateDate(date);
+
+        if (date.isEqual(LocalDate.now())) {
+            reservationTime.validateTime();
+        }
+    }
+
+    private Reservation findReservation(long id) {
+        return reservationRepository.getById(id)
+                .orElseThrow(() -> new NotFoundResourceException(NOT_FOUND_RESERVATION));
     }
 
     private void validateDate(LocalDate reservationDate) {
-        LocalDate today = LocalDate.now();
-
-        if (reservationDate.isBefore(today)) {
+        if (reservationDate.isBefore(LocalDate.now())) {
             throw new InvalidRequestException(INVALID_RESERVATION_DATE);
         }
     }
